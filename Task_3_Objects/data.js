@@ -1,0 +1,40 @@
+
+export const data = [
+    {
+        empId:"1",
+        name:"Rupesh",
+        department:"CSE",
+        salary:50000
+    },
+        {
+        empId:"2",
+        name:"Abhay",
+        department:"Dental",
+        salary:60000
+    },
+    {
+        empId:"3",
+        name:"Aarti",
+        department:"MBBS",
+        salary:70000
+    },
+    {
+        empId:"4",
+        name:"Anshu",
+        department:"AI/ML",
+        salary:80000
+    },
+    {
+        empId:"5",
+        name:"Ritika",
+        department:"CSE",
+        salary:55000
+    },
+     {
+        empId:"6",
+        name:"Payal",
+        department:"MBBS",
+        salary:90000
+    },
+
+]

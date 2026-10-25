@@ -10,13 +10,10 @@ class myMap{
         this.size = 0;
     }
 
-
-
     set(key,val){
         this.map[key] = val;
         this.size++;
     }
-
 
     get(key){
         return this.map[key];
