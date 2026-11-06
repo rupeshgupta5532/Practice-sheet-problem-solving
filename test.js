@@ -46,3 +46,17 @@ function intersectionOfArrays(arr1,arr2){
 const arr1 = [1, 2, 3, 4]
 const arr2 =  [3, 4, 5, 6]
 console.log(intersectionOfArrays(arr1,arr2))
+
+
+// Redis session mgmt
+// Authentication 
+// Jest js Implementation Coverage tests
+
+
+
+// Api headers 
+// api-key
+// app type
+// app-version
+// app
+// last_login_At
