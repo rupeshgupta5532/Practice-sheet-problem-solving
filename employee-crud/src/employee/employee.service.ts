@@ -84,7 +84,7 @@ export class EmployeeService {
           },
         },
       ]);
-      return data;
+      return data as Array<{ _id: string; count: number }>;
     } catch (error: unknown) {
       throw new HttpException(
         error instanceof Error ? error.message : 'Internal Server Error',
@@ -111,7 +111,7 @@ export class EmployeeService {
         },
       ]);
       console.log('data is data : ', data);
-      return data[0];
+      return (data[0] ?? null) as { avgSalary: number } | null;
     } catch (error: unknown) {
       throw new HttpException(
         error instanceof Error ? error.message : 'Internal Server Error',

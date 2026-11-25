@@ -10,7 +10,7 @@ interface MemorySession {
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: RedisClientType;
   private memoryStore = new Map<string, MemorySession>();
-  
+
   constructor() {
     this.client = createClient({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -23,7 +23,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  async onModuleInit(){
+  async onModuleInit() {
     try {
       await this.client.connect();
       console.log('Redis connected successfully');
@@ -35,17 +35,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy(){
+  async onModuleDestroy() {
     if (this.client.isOpen) {
       await this.client.quit();
     }
   }
 
-  async setSession(
-    sessionId: string,
-    data: any,
-    ttl = 3600,     
-  ){
+  async setSession(sessionId: string, data: any, ttl = 3600) {
     const serialized = JSON.stringify(data);
 
     if (this.client.isOpen) {
@@ -55,7 +51,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         console.log(
           'Failed to write to Redis:',
           err instanceof Error ? err.message : 'Unknown error',
-        ); 
+        );
       }
     }
 
@@ -66,14 +62,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  async getSession(
-    sessionId: string,
-  ){
+  async getSession<T = unknown>(sessionId: string): Promise<T | null> {
     if (this.client.isOpen) {
       try {
         const data = await this.client.get(`session:${sessionId}`);
         if (typeof data === 'string') {
-          return JSON.parse(data);
+          return JSON.parse(data) as T;
         }
       } catch (err: unknown) {
         console.log(
@@ -92,10 +86,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       return null;
     }
 
-    return JSON.parse(item.data);
+    return JSON.parse(item.data) as T;
   }
 
-  async deleteSession(sessionId: string){
+  async deleteSession(sessionId: string) {
     if (this.client.isOpen) {
       try {
         await this.client.del(`session:${sessionId}`);

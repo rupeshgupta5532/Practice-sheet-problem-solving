@@ -19,6 +19,9 @@ export class Employee {
 
   @Prop()
   lastLoginAt?: string;
+
+  @Prop({ default: 'ADMIN' })
+  role?: string;
 }
 
 export const employeeSchema = SchemaFactory.createForClass(Employee);

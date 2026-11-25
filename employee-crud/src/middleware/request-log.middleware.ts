@@ -24,12 +24,22 @@ export class RequestLogMiddleware implements NestMiddleware {
     const app = req.headers['app'] as string;
 
     const rawHeader = req.headers['last_login_at'];
-    let lastLoginAt;
+    let lastLoginAt: string | undefined;
 
-    if(typeof rawHeader === "string"){
-        lastLoginAt= rawHeader.trim();
-    }else if(Array.isArray(rawHeader)){
-      lastLoginAt = rawHeader[0].trim()
+    if (
+      typeof rawHeader === 'string' &&
+      rawHeader.trim() !== '' &&
+      rawHeader !== 'null' &&
+      rawHeader !== 'undefined'
+    ) {
+      lastLoginAt = rawHeader.trim();
+    } else if (
+      Array.isArray(rawHeader) &&
+      rawHeader[0]?.trim() !== '' &&
+      rawHeader[0] !== 'null' &&
+      rawHeader[0] !== 'undefined'
+    ) {
+      lastLoginAt = rawHeader[0].trim();
     }
 
     // 2. If not in header, check active Redis session via authorization token
@@ -51,7 +61,8 @@ export class RequestLogMiddleware implements NestMiddleware {
 
       if (token) {
         try {
-          const session = await this.redisService.getSession(token);
+          const session =
+            await this.redisService.getSession<UserSession>(token);
 
           if (session?.lastLoginAt || session?.loggedInAt) {
             lastLoginAt = session.lastLoginAt || session.loggedInAt;
@@ -68,7 +79,8 @@ export class RequestLogMiddleware implements NestMiddleware {
       (req.originalUrl?.includes('/auth/login') ||
         req.url?.includes('/auth/login'))
     ) {
-      const body = req.body;
+      const body = req.body as
+        { email?: string; username?: string } | undefined;
       const identifier = body?.email || body?.username;
       if (identifier) {
         try {

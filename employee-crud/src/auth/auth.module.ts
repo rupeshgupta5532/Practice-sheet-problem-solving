@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { RedisService } from './redis.service';
 import { AuthGuard } from './auth.guard';
+import { AdminGuard } from './admin.guard';
 import { Employee, employeeSchema } from '../employee/employee.schema';
 
 @Global()
@@ -14,7 +15,7 @@ import { Employee, employeeSchema } from '../employee/employee.schema';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, RedisService, AuthGuard],
-  exports: [AuthService, RedisService, AuthGuard],
+  providers: [AuthService, RedisService, AuthGuard, AdminGuard],
+  exports: [AuthService, RedisService, AuthGuard, AdminGuard],
 })
 export class AuthModule {}

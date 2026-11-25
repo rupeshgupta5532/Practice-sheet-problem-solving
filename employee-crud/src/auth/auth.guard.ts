@@ -15,14 +15,14 @@ export interface RequestWithUser extends Request {
 export class AuthGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
-  async canActivate(context: ExecutionContext){
-    const request = context.switchToHttp().getRequest();
+  async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
     const authHeader = request.headers['authorization'];
     const token =
       typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
         ? authHeader.slice(7)
-        : (request.headers['x-session-id']) ||
-          (request.headers['token']);
+        : (request.headers['x-session-id'] as string | undefined) ||
+          (request.headers['token'] as string | undefined);
 
     // console.log("token is",token)
 
