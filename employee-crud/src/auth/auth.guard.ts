@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
     const authHeader = request.headers['authorization'];
     const token =
       typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7)
+        ? authHeader.slice(7).split(';')[0].trim().split(' ')[0].trim()
         : (request.headers['x-session-id'] as string | undefined) ||
           (request.headers['token'] as string | undefined);
 

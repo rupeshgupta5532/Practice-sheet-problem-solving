@@ -92,5 +92,5 @@ export class CheckPatchReleaseDto {
 
   @IsOptional()
   @IsString()
-  platform?: string = 'WEB';
+  platform?: string = 'ALL';
 }

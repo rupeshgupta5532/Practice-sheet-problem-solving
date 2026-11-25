@@ -165,5 +165,26 @@ describe('PatchReleaseService', () => {
       expect(result.latestVersion).toBe('2.1.0');
       expect(result.updateType).toBe(UpdateType.FORCE);
     });
+
+    it('should match any published release when client platform is ALL', async () => {
+      mockPatchModel.find.mockReturnValueOnce({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue([
+            {
+              version: '1.2.0',
+              updateType: UpdateType.OPTIONAL,
+              status: PatchStatus.PUBLISHED,
+              platform: PatchPlatform.ANDROID,
+            },
+          ]),
+        }),
+      });
+
+      const result = await service.checkUpdate('1.0.0', 'ALL');
+      expect(result.updateAvailable).toBe(true);
+      expect(result.latestVersion).toBe('1.2.0');
+      expect(result.updateRequired).toBe(false);
+      expect(result.updateType).toBe(UpdateType.OPTIONAL);
+    });
   });
 });

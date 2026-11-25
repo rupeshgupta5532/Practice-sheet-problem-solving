@@ -42,15 +42,13 @@ export class RequestLogMiddleware implements NestMiddleware {
       lastLoginAt = rawHeader[0].trim();
     }
 
-    // 2. If not in header, check active Redis session via authorization token
-
     if (!lastLoginAt) {
       const authHeader = req.headers['authorization'];
 
       let token: string | undefined;
 
       if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-        token = authHeader.slice(7);
+        token = authHeader.slice(7).split(';')[0].trim().split(' ')[0].trim();
       } else {
         const headerToken = req.headers['token'];
 
@@ -68,12 +66,11 @@ export class RequestLogMiddleware implements NestMiddleware {
             lastLoginAt = session.lastLoginAt || session.loggedInAt;
           }
         } catch {
-          // Ignore Redis errors
+          // ignore session retrieval error in logger
         }
       }
     }
 
-    // 3. If login request, use employee's previous login timestamp from DB
     if (
       !lastLoginAt &&
       (req.originalUrl?.includes('/auth/login') ||

@@ -10,7 +10,8 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders:
       'Content-Type,Accept,Authorization,x-session-id,X-App-Version,x-app-version,app-version',
-    exposedHeaders: 'X-Update-Available,X-Latest-Version,X-Update-Type',
+    exposedHeaders:
+      'X-Update-Available,X-Latest-Version,X-Update-Type,X-Update-Title,X-Update-Content',
   });
 
   app.useGlobalPipes(

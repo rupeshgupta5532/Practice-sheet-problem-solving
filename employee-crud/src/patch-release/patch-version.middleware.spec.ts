@@ -269,6 +269,8 @@ describe('PatchVersionMiddleware', () => {
         updateType: UpdateType.OPTIONAL,
         currentVersion: '1.0.0',
         latestVersion: '1.1.0',
+        title: 'Feature Release',
+        content: 'New updates included',
       });
 
       await middleware.use(
@@ -288,6 +290,14 @@ describe('PatchVersionMiddleware', () => {
       expect(mockRes.setHeader).toHaveBeenCalledWith(
         'X-Update-Type',
         'OPTIONAL',
+      );
+      expect(mockRes.setHeader).toHaveBeenCalledWith(
+        'X-Update-Title',
+        encodeURIComponent('Feature Release'),
+      );
+      expect(mockRes.setHeader).toHaveBeenCalledWith(
+        'X-Update-Content',
+        encodeURIComponent('New updates included'),
       );
       expect(mockNext).toHaveBeenCalled();
       expect(mockRes.status).not.toHaveBeenCalled();

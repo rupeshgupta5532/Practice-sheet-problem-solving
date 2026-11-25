@@ -96,7 +96,12 @@ export class PatchReleaseService {
     }
 
     const published = allPublished.filter((r) => {
-      if (targetPlatform === PatchPlatform.ALL) return true;
+      if (
+        targetPlatform === PatchPlatform.ALL ||
+        targetPlatform === PatchPlatform.WEB
+      ) {
+        return true;
+      }
       return r.platform === targetPlatform || r.platform === PatchPlatform.ALL;
     });
 
@@ -117,11 +122,12 @@ export class PatchReleaseService {
       };
     }
 
-    // Newer release exists -> update is required
+    const isForce = latestRelease.updateType === UpdateType.FORCE;
+
     return {
       updateAvailable: true,
-      updateRequired: true,
-      updateType: latestRelease.updateType || UpdateType.FORCE,
+      updateRequired: isForce,
+      updateType: latestRelease.updateType || UpdateType.OPTIONAL,
       currentVersion,
       minimumRequiredVersion: latestRelease.version,
       latestVersion: latestRelease.version,

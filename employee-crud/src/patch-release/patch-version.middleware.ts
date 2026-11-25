@@ -22,7 +22,7 @@ export class PatchVersionMiddleware implements NestMiddleware {
     const authHeader = req.headers['authorization'];
     const token =
       typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7)
+        ? authHeader.slice(7).split(';')[0].trim().split(' ')[0].trim()
         : (req.headers['x-session-id'] as string | undefined) ||
           (req.headers['token'] as string | undefined);
 
@@ -89,6 +89,15 @@ export class PatchVersionMiddleware implements NestMiddleware {
       res.setHeader('X-Update-Available', 'true');
       res.setHeader('X-Latest-Version', updateCheck.latestVersion);
       res.setHeader('X-Update-Type', 'OPTIONAL');
+      if (updateCheck.title) {
+        res.setHeader('X-Update-Title', encodeURIComponent(updateCheck.title));
+      }
+      if (updateCheck.content) {
+        res.setHeader(
+          'X-Update-Content',
+          encodeURIComponent(updateCheck.content),
+        );
+      }
     }
 
     return next();
@@ -99,7 +108,6 @@ export class PatchVersionMiddleware implements NestMiddleware {
     const excludedPrefixes = [
       '/auth',
       '/patch-releases/check',
-      '/static-documents/public',
       '/app-version/check',
     ];
     return excludedPrefixes.some((prefix) => cleanPath.startsWith(prefix));

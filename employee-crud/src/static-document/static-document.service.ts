@@ -40,9 +40,6 @@ export class StaticDocumentService {
   }
 
   async findById(id: string) {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new NotFoundException(`Static document with ID "${id}" not found`);
-    }
     const doc = await this.docModel.findById(id).lean().exec();
     if (!doc) {
       throw new NotFoundException(`Static document with ID "${id}" not found`);
@@ -55,10 +52,6 @@ export class StaticDocumentService {
     dto: UpdateStaticDocumentDto,
     adminIdentifier: string,
   ) {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new NotFoundException(`Static document with ID "${id}" not found`);
-    }
-
     const updated = await this.docModel
       .findByIdAndUpdate(
         id,
