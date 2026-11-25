@@ -186,5 +186,75 @@ describe('PatchReleaseService', () => {
       expect(result.updateRequired).toBe(false);
       expect(result.updateType).toBe(UpdateType.OPTIONAL);
     });
+
+    it('should support switching back to a previous stable version (rollback)', async () => {
+      const now = Date.now();
+      mockPatchModel.find.mockReturnValueOnce({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue([
+            {
+              version: '4.2.4',
+              updateType: UpdateType.OPTIONAL,
+              status: PatchStatus.PUBLISHED,
+              platform: PatchPlatform.ANDROID,
+              createdAt: new Date(now - 10000),
+            },
+            {
+              version: '4.2.3',
+              title: 'Rollback to Stable',
+              content: 'Reverting due to issues in 4.2.4',
+              updateType: UpdateType.FORCE,
+              status: PatchStatus.PUBLISHED,
+              platform: PatchPlatform.ANDROID,
+              createdAt: new Date(now), // Most recently published
+            },
+          ]),
+        }),
+      });
+
+      const result = await service.checkUpdate('4.2.4', 'ANDROID');
+      expect(result.updateAvailable).toBe(true);
+      expect(result.latestVersion).toBe('4.2.3');
+      expect(result.updateType).toBe(UpdateType.FORCE);
+      expect(result.title).toBe('Rollback to Stable');
+    });
+
+    it('should independently notify Android and iOS when same version 4.2.4 is released on both', async () => {
+      const now = Date.now();
+      mockPatchModel.find.mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue([
+            {
+              version: '4.2.4',
+              title: 'Android Patch 4.2.4',
+              updateType: UpdateType.OPTIONAL,
+              status: PatchStatus.PUBLISHED,
+              platform: PatchPlatform.ANDROID,
+              createdAt: new Date(now - 5000),
+            },
+            {
+              version: '4.2.4',
+              title: 'iOS Patch 4.2.4',
+              updateType: UpdateType.OPTIONAL,
+              status: PatchStatus.PUBLISHED,
+              platform: PatchPlatform.IOS,
+              createdAt: new Date(now),
+            },
+          ]),
+        }),
+      });
+
+      // Android client on 1.0.0 gets Android 4.2.4
+      const androidResult = await service.checkUpdate('1.0.0', 'ANDROID');
+      expect(androidResult.updateAvailable).toBe(true);
+      expect(androidResult.latestVersion).toBe('4.2.4');
+      expect(androidResult.title).toBe('Android Patch 4.2.4');
+
+      // iOS client on 1.0.0 gets iOS 4.2.4
+      const iosResult = await service.checkUpdate('1.0.0', 'IOS');
+      expect(iosResult.updateAvailable).toBe(true);
+      expect(iosResult.latestVersion).toBe('4.2.4');
+      expect(iosResult.title).toBe('iOS Patch 4.2.4');
+    });
   });
 });

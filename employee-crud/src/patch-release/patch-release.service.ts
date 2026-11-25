@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   CreatePatchReleaseDto,
   PatchPlatform,
@@ -50,7 +50,6 @@ export class PatchReleaseService {
     this.cachedPublishedReleases = null;
   }
 
-  // Create patch release (active & published immediately)
   async create(dto: CreatePatchReleaseDto) {
     this.invalidateCache();
     return this.patchModel.create({
@@ -59,12 +58,10 @@ export class PatchReleaseService {
     });
   }
 
-  // List all patch releases
   async findAll() {
     return this.patchModel.find().sort({ createdAt: -1 }).lean().exec();
   }
 
-  // Check if update is needed for the given currentVersion
   async checkUpdate(currentVersion: string, platform: string = 'ALL') {
     const now = Date.now();
     let allPublished: PatchRelease[];
@@ -86,39 +83,51 @@ export class PatchReleaseService {
     }
 
     const normPlatform = (platform || 'ALL').toUpperCase();
-    let targetPlatform: PatchPlatform = PatchPlatform.ALL;
-    if (normPlatform === 'ANDROID') {
-      targetPlatform = PatchPlatform.ANDROID;
-    } else if (normPlatform === 'IOS') {
-      targetPlatform = PatchPlatform.IOS;
-    } else if (normPlatform === 'WEB') {
-      targetPlatform = PatchPlatform.WEB;
-    }
 
-    const published = allPublished.filter((r) => {
-      if (
-        targetPlatform === PatchPlatform.ALL ||
-        targetPlatform === PatchPlatform.WEB
-      ) {
-        return true;
-      }
-      return r.platform === targetPlatform || r.platform === PatchPlatform.ALL;
+    const matching = allPublished.filter((r) => {
+      if (normPlatform === 'ALL') return true;
+      return (
+        (r.platform as string) === normPlatform ||
+        r.platform === PatchPlatform.ALL
+      );
     });
 
-    // Sort descending by version to get the latest release
-    published.sort((a, b) => compareVersions(b.version, a.version));
-    const latestRelease = published[0];
+    const getDocTime = (
+      doc: PatchRelease & { _id?: Types.ObjectId | string },
+    ): number => {
+      if (doc?.createdAt) {
+        const t = new Date(doc.createdAt).getTime();
+        if (!isNaN(t) && t > 0) return t;
+      }
+      if (doc?._id) {
+        if (doc._id instanceof Types.ObjectId) {
+          return doc._id.getTimestamp().getTime();
+        }
+        if (typeof doc._id === 'string') {
+          const t = parseInt(doc._id.substring(0, 8), 16) * 1000;
+          if (!isNaN(t) && t > 0) return t;
+        }
+      }
+      return 0;
+    };
 
-    if (
-      !latestRelease ||
-      compareVersions(latestRelease.version, currentVersion) <= 0
-    ) {
+    matching.sort((a, b) => getDocTime(b) - getDocTime(a));
+
+    const latestRelease = matching[0];
+
+    const cleanCurrent = (currentVersion || '0.0.0').replace(/^v/i, '').trim();
+    const cleanLatest = latestRelease
+      ? latestRelease.version.replace(/^v/i, '').trim()
+      : cleanCurrent;
+
+    // When the header release version is different from the latest patch release, show popup
+    if (!latestRelease || cleanCurrent === cleanLatest) {
       return {
         updateAvailable: false,
         updateRequired: false,
         updateType: null,
-        currentVersion,
-        latestVersion: latestRelease ? latestRelease.version : currentVersion,
+        currentVersion: cleanCurrent,
+        latestVersion: cleanLatest,
       };
     }
 
@@ -128,11 +137,12 @@ export class PatchReleaseService {
       updateAvailable: true,
       updateRequired: isForce,
       updateType: latestRelease.updateType || UpdateType.OPTIONAL,
-      currentVersion,
-      minimumRequiredVersion: latestRelease.version,
-      latestVersion: latestRelease.version,
+      currentVersion: cleanCurrent,
+      minimumRequiredVersion: cleanLatest,
+      latestVersion: cleanLatest,
       title: latestRelease.title,
       content: latestRelease.content,
+      platform: latestRelease.platform,
     };
   }
 }

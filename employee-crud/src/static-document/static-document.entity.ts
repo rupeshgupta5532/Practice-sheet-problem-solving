@@ -40,7 +40,6 @@ export class StaticDocument {
 export const StaticDocumentSchema =
   SchemaFactory.createForClass(StaticDocument);
 
-// DTOs
 export class CreateStaticDocumentDto {
   @IsNotEmpty()
   @IsEnum(StaticDocumentType)

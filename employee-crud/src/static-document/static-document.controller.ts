@@ -21,7 +21,6 @@ import type { RequestWithAdmin } from '../auth/admin.guard';
 export class StaticDocumentController {
   constructor(private readonly docService: StaticDocumentService) {}
 
-  // Public APIs (No authentication required)
   @Get('public')
   async findAllPublic() {
     return this.docService.findAllPublic();
@@ -32,7 +31,6 @@ export class StaticDocumentController {
     return this.docService.findByTypePublic(type);
   }
 
-  // Admin APIs (Protected by AdminGuard)
   @Post()
   @UseGuards(AdminGuard)
   async create(

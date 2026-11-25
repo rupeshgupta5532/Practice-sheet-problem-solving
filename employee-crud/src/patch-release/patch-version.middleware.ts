@@ -67,7 +67,6 @@ export class PatchVersionMiddleware implements NestMiddleware {
       clientPlatform,
     );
 
-    // 7. Enforce FORCE / Mandatory update -> HTTP 426
     if (
       updateCheck.updateRequired &&
       updateCheck.updateType === UpdateType.FORCE

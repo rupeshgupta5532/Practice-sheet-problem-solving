@@ -76,14 +76,23 @@ describe('StaticDocumentService', () => {
           }),
         };
       }),
-      findByIdAndUpdate: jest.fn().mockReturnValue({
-        lean: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue({
-            ...sampleDoc,
-            lastAction: 'EDIT',
-            title: 'Updated Title',
+      findByIdAndUpdate: jest.fn().mockImplementation((id: string) => {
+        if (id === sampleId) {
+          return {
+            lean: jest.fn().mockReturnValue({
+              exec: jest.fn().mockResolvedValue({
+                ...sampleDoc,
+                lastAction: 'EDIT',
+                title: 'Updated Title',
+              }),
+            }),
+          };
+        }
+        return {
+          lean: jest.fn().mockReturnValue({
+            exec: jest.fn().mockResolvedValue(null),
           }),
-        }),
+        };
       }),
     };
 
